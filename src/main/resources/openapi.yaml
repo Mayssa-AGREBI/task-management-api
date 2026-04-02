@@ -1,0 +1,252 @@
+openapi: 3.0.3
+
+info:
+  title: Task Management API
+  description: REST API for managing tasks and users
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+
+  /tasks:
+    get:
+      summary: Get all tasks with pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskDTO'
+
+    post:
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '200':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+
+  /tasks/{id}:
+    put:
+      summary: Update task by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+
+    delete:
+      summary: Delete task by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Task deleted
+
+  /tasks/{id}/status:
+    patch:
+      summary: Update task status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      responses:
+        '200':
+          description: Updated task status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+
+  /tasks/assign:
+    patch:
+      summary: Assign task to a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignTaskRequest'
+      responses:
+        '200':
+          description: Task assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+
+  /tasks/search:
+    get:
+      summary: Search tasks by title
+      parameters:
+        - name: title
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskDTO'
+
+  /tasks/search/status:
+    get:
+      summary: Search tasks by completion status
+      parameters:
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Matching tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskDTO'
+
+  /users:
+    get:
+      summary: Get all users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDTO'
+
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDTO'
+      responses:
+        '200':
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+
+components:
+  schemas:
+
+    TaskDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Finish project"
+        completed:
+          type: boolean
+          example: false
+
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "New Task"
+
+    UpdateStatusRequest:
+      type: object
+      properties:
+        completed:
+          type: boolean
+          example: true
+
+    AssignTaskRequest:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 2
+
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Omar"
+        email:
+          type: string
+          example: "omar@example.com"
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskDTO'
