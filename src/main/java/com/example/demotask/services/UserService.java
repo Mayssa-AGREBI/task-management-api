@@ -1,43 +1,31 @@
 package com.example.demotask.services;
 
-import com.example.demotask.dto.CreateTaskRequest;
-import com.example.demotask.entities.Task;
 import com.example.demotask.entities.User;
+import com.example.demotask.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
 @Service
 public class UserService {
 
-    private final List<User> users = new ArrayList<>();
-    private final AtomicLong userIdGen = new AtomicLong();
-    private final AtomicLong taskIdGen = new AtomicLong();
+    private final UserRepository userRepository;
 
-    public UserService() {
-        users.add(new User(userIdGen.incrementAndGet(), "Alice", "alice@test.com", new ArrayList<>()));
-        users.add(new User(userIdGen.incrementAndGet(), "Bob", "bob@test.com", new ArrayList<>()));
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public List<User> getAllUsers() {
-        return users;
+        return userRepository.findAll();
     }
 
     public User addUser(User user) {
-        user.setId(userIdGen.incrementAndGet());
-        user.setTasks(new ArrayList<>());
-        users.add(user);
-        return user;
+        return userRepository.save(user);
     }
-
 
     public User getUserById(Long id) {
-        return users.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
+        return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
-
 
 }

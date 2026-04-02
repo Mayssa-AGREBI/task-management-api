@@ -1,106 +1,120 @@
 package com.example.demotask.services;
 
 import com.example.demotask.dto.CreateTaskRequest;
+import com.example.demotask.dto.TaskDTO;
 import com.example.demotask.entities.Task;
 import com.example.demotask.entities.User;
+import com.example.demotask.exceptions.TaskNotFoundException;
+import com.example.demotask.mappers.MapperTasks;
+import com.example.demotask.repositories.TaskRepository;
+import com.example.demotask.repositories.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
 @Service
+@Slf4j
 public class TaskService {
 
-    private final List<Task> tasks = new ArrayList<>();
-    private final AtomicLong taskIdGen = new AtomicLong();
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
-    public TaskService() {
-        Task t1 = new Task();
-        t1.setId(taskIdGen.incrementAndGet());
-        t1.setTitle("Learn Spring Boot");
-        t1.setCompleted(false);
-        t1.setUser(null);
-        tasks.add(t1);
-
-        Task t2 = new Task();
-        t2.setId(taskIdGen.incrementAndGet());
-        t2.setTitle("Build API");
-        t2.setCompleted(true);
-        t2.setUser(null);
-        tasks.add(t2);
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+        this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
-    public List<Task> getAllTasks(int page, int size) {
-        int start = page * size;
-        int end = Math.min(start + size, tasks.size());
+    public List<TaskDTO> getAllTasks(int page, int size) {
 
-        if (start > tasks.size()) {
-            return Collections.emptyList();
-        }
+        Page<Task> tasks = taskRepository.findAll(PageRequest.of(page, size));
 
-        return tasks.subList(start, end);
-    }
-
-
-    public Task updateStatus(Long id, boolean completed) {
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        task.setCompleted(completed);
-        return task;
-    }
-
-    public Task addTask(Task task) {
-        task.setId(taskIdGen.incrementAndGet());
-        // Ensure task has a user set (optional)
-        if (task.getUser() == null) {
-            task.setUser(null);
-        }
-        tasks.add(task);
-        return task;
-    }
-
-    public Task findTaskById(Long id) {
         return tasks.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .map(MapperTasks::toTaskDTO)
+                .toList();
     }
 
-    public Task updateTask(Long id, CreateTaskRequest request) {
+    public TaskDTO addTask(CreateTaskRequest request) {
+        log.info("Creating task with title: {}", request.getTitle());
+        Task task = new Task();
+        task.setTitle(request.getTitle());
+        task.setCompleted(request.isCompleted());
+        return MapperTasks.toTaskDTO(taskRepository.save(task));
+    }
 
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
+    public TaskDTO findTaskById(Long id) {
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        return MapperTasks.toTaskDTO(task);
+    }
+
+    public TaskDTO updateTask(Long id, CreateTaskRequest request) {
+
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         task.setTitle(request.getTitle());
+        task.setCompleted(request.isCompleted());
 
-       // task.setCompleted(request.completed());
+        return MapperTasks.toTaskDTO(taskRepository.save(task));
+    }
 
-        return task;
+    public TaskDTO updateStatus(Long id, boolean completed) {
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        task.setCompleted(completed);
+
+        return MapperTasks.toTaskDTO(taskRepository.save(task));
     }
 
     public void deleteTask(Long id) {
+        log.info("Deleting task with id: {}", id);
+        if (id == null) {
+            throw new IllegalArgumentException("Task id must not be null");
+        }
 
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
 
-        tasks.remove(task);
+        taskRepository.delete(task);
     }
 
-    public Task assignTask(Long taskId, User user) {
-        Task task = tasks.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
+    public TaskDTO assignTask(Long taskId, Long userId) {
+
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         task.setUser(user);
-        return task;
+
+        return MapperTasks.toTaskDTO(taskRepository.save(task));
+    }
+
+    public List<TaskDTO> searchByTitle(String title) {
+
+        return taskRepository
+                .findByTitleContainingIgnoreCase(title)
+                .stream()
+                .map(MapperTasks::toTaskDTO)
+                .toList();
+    }
+
+
+    public List<TaskDTO> searchByStatus(boolean status) {
+
+        return taskRepository
+                .findByCompleted(status)
+                .stream()
+                .map(MapperTasks::toTaskDTO)
+                .toList();
     }
 
 }

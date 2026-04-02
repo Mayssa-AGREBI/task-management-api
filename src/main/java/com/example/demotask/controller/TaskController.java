@@ -2,65 +2,85 @@ package com.example.demotask.controller;
 
 import com.example.demotask.dto.AssignTaskRequest;
 import com.example.demotask.dto.CreateTaskRequest;
+import com.example.demotask.dto.TaskDTO;
 import com.example.demotask.dto.UpdateStatusRequest;
-import com.example.demotask.entities.Task;
-import com.example.demotask.entities.User;
 import com.example.demotask.services.TaskService;
-import com.example.demotask.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
+@Tag(name = "Tasks", description = "Task Management APIs")
 public class TaskController {
 
     private final TaskService taskService;
 
-    private final UserService userService;
-
     public TaskController(TaskService taskService) {
-
         this.taskService = taskService;
-        this.userService = new UserService();
-
     }
 
+    @Operation(summary = "Get all tasks with pagination")
     @GetMapping
-    public List<Task> getTasks(
+    public List<TaskDTO> getTasks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
         return taskService.getAllTasks(page, size);
     }
 
+    @Operation(summary = "Create a new task")
     @PostMapping
-    public Task createTask(@Valid @RequestBody Task task) {
-        return taskService.addTask(task);
+    public TaskDTO createTask(@Valid @RequestBody CreateTaskRequest request) {
+        return taskService.addTask(request);
     }
 
+    @Operation(summary = "Update task by ID")
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id,
-                           @RequestBody CreateTaskRequest request) {
+    public TaskDTO updateTask(@PathVariable Long id,
+                              @RequestBody CreateTaskRequest request) {
+
         return taskService.updateTask(id, request);
     }
 
+    @Operation(summary = "Update task status (completed / not completed)")
     @PatchMapping("/{id}/status")
-    public Task updateStatus(@PathVariable Long id,
-                             @RequestBody UpdateStatusRequest request) {
+    public TaskDTO updateStatus(@PathVariable Long id,
+                                @RequestBody UpdateStatusRequest request) {
+
         return taskService.updateStatus(id, request.isCompleted());
     }
+
+    @Operation(summary = "Delete task by ID")
     @DeleteMapping("/{id}")
-    public String deleteTask(@PathVariable Long id ) {
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
-        return "Task deleted successfully";
+        return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Assign task to a user")
     @PatchMapping("/assign")
-    public Task assignTask(@Valid @RequestBody AssignTaskRequest request) {
-        User user = userService.getUserById(request.getUserId());
-        return taskService.assignTask(request.getTaskId(), user);
+    public TaskDTO assignTask(@Valid @RequestBody AssignTaskRequest request) {
+
+        return taskService.assignTask(
+                request.getTaskId(),
+                request.getUserId()
+        );
     }
 
+    @Operation(summary = "Search tasks by title")
+    @GetMapping("/search")
+    public List<TaskDTO> search(@RequestParam String title) {
+        return taskService.searchByTitle(title);
+    }
+
+    @Operation(summary = "Search tasks by completion status")
+    @GetMapping("/search/status")
+    public List<TaskDTO> searchByStatus(@RequestParam boolean status) {
+        return taskService.searchByStatus(status);
+    }
 }

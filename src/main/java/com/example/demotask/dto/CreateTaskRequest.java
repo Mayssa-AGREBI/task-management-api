@@ -8,6 +8,6 @@ public class CreateTaskRequest {
 
     @NotBlank(message = "Title must not be empty")
     private String title;
-
+    private Long userId;
     private boolean completed;
 }
