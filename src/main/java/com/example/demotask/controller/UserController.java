@@ -3,8 +3,6 @@ package com.example.demotask.controller;
 import com.example.demotask.dto.UserDTO;
 import com.example.demotask.entities.User;
 import com.example.demotask.services.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "Users", description = "User Management APIs")
 public class UserController {
 
     private final UserService userService;
@@ -22,7 +19,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @Operation(summary = "Get all users")
     @GetMapping
     public List<UserDTO> getUsers() {
         return userService.getAllUsers()
@@ -31,7 +27,6 @@ public class UserController {
                 .toList();
     }
 
-    @Operation(summary = "Create a new user")
     @PostMapping
     public UserDTO createUser(@Valid @RequestBody UserDTO dto) {
 
