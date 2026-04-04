@@ -17,7 +17,7 @@ public class OpenApiConfig {
                         .version("1.0.0")
                         .description("REST API documentation for Demo Task application")
                         .contact(new Contact()
-                                .name("Omar Thaljeni")
-                                .email("omar@example.com")));
+                                .name("Maissa Agerbi")
+                                .email("mayssa.AGERBI@wevioo.com")));
     }
 }
