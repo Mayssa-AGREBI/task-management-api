@@ -77,18 +77,23 @@ public class OpenApiController {
 
     @GetMapping(value = "/openapi.yaml", produces = "text/yaml")
     public Resource getOpenApi() {
-        return new ClassPathResource("openapi.yaml");
+        return new ClassPathResource("static/openapi.yaml");
     }
 }
 
 
 ---
 
-## 📖 API Documentation
+        ## 📖
+API Documentation
 
-### ▶️ View OpenAPI file in browser
+### ▶️
+View OpenAPI
+file in
+browser
 
-After running the project:
+After running
+the project:
 
 ```
 http://localhost:8080/openapi.yaml
