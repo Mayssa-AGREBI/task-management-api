@@ -4,6 +4,7 @@ import com.example.demotask.dto.AssignTaskRequest;
 import com.example.demotask.dto.CreateTaskRequest;
 import com.example.demotask.dto.TaskDTO;
 import com.example.demotask.dto.UpdateStatusRequest;
+import com.example.demotask.enums.TaskStatus;
 import com.example.demotask.services.TaskService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,13 +58,13 @@ public class TaskController {
         return taskService.updateTask(id, request);
     }
 
-    @Operation(summary = "Update task status (completed / not completed)")
+    @Operation(summary = "Update task status (TODO / DOING / DONE)")
     @PatchMapping("/{id}/status")
     public TaskDTO updateStatus(
             @PathVariable Long id,
             @RequestBody UpdateStatusRequest request) {
 
-        return taskService.updateStatus(id, request.isCompleted());
+        return taskService.updateStatus(id, request.getStatus());
     }
 
     @Operation(summary = "Delete a task by ID")
@@ -92,7 +93,7 @@ public class TaskController {
 
     @Operation(summary = "Search tasks by status")
     @GetMapping("/search/status")
-    public List<TaskDTO> searchByStatus(@RequestParam boolean status) {
+    public List<TaskDTO> searchByStatus(@RequestParam TaskStatus status) {
         return taskService.searchByStatus(status);
     }
 }

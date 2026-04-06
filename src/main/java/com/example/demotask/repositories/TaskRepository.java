@@ -1,6 +1,7 @@
 package com.example.demotask.repositories;
 
 import com.example.demotask.entities.Task;
+import com.example.demotask.enums.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +12,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByTitleContainingIgnoreCase(String title);
 
-    List<Task> findByCompleted(boolean completed);
+    List<Task> findByStatus(TaskStatus status);
 
 
 }
