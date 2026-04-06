@@ -1,5 +1,6 @@
 package com.example.demotask.entities;
 
+import com.example.demotask.enums.TaskStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -18,7 +19,8 @@ public class Task {
     @NotBlank(message = "Title must not be empty")
     private String title;
 
-    private boolean completed;
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

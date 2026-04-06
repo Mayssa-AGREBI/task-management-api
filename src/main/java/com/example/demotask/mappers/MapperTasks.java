@@ -11,23 +11,35 @@ import java.util.stream.Collectors;
 public class MapperTasks {
 
     public static TaskDTO toTaskDTO(Task task) {
+        if (task == null) {
+            return null;
+        }
+
         TaskDTO dto = new TaskDTO();
         dto.setId(task.getId());
         dto.setTitle(task.getTitle());
-        dto.setCompleted(task.isCompleted());
+
+        dto.setStatus(task.getStatus());
+
         return dto;
     }
 
     public static UserDTO toUserDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
 
-        List<TaskDTO> taskDTOs = user.getTasks()
+        List<TaskDTO> taskDTOs = user.getTasks() != null
+                ? user.getTasks()
                 .stream()
-                .map(com.example.demotask.mappers.MapperTasks::toTaskDTO)
-                .collect(Collectors.toList());
+                .map(MapperTasks::toTaskDTO)
+                .collect(Collectors.toList())
+                : List.of();
 
         dto.setTasks(taskDTOs);
 
